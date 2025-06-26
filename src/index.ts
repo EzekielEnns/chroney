@@ -8,6 +8,7 @@ import {
   totalDaysInPattern,
   type EventPattern,
 } from "./schedule";
+import { Hono } from "hono";
 
 // Re-export for tests
 export { getEventsForPattern, type EventPattern };
@@ -108,15 +109,13 @@ export class ChroneyServer extends McpAgent {
   }
 }
 
-export default {
-  fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext) {
-    const url = new URL(request.url);
-    if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-      return ChroneyServer.serveSSE("/sse").fetch(request, env, ctx);
-    }
-    if (url.pathname === "/mcp") {
-      return ChroneyServer.serve("/mcp").fetch(request, env, ctx);
-    }
-    return new Response("Not found", { status: 404 });
-  },
-};
+const app = new Hono();
+
+app.mount("/sse", ChroneyServer.serveSSE("/sse").fetch, {
+  replaceRequest: false,
+});
+
+app.mount("/mcp", ChroneyServer.serve("/mcp").fetch, {
+  replaceRequest: false,
+});
+export default app;
