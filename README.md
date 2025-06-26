@@ -1,21 +1,4 @@
-```txt
-npm install
-npm run dev
-```
-
-```txt
-npm run deploy
-```
-
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
-
-```txt
-npm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+example problem:
+my buddy Dale is a nurse there shift work is
+6 on, 2 off, 5 on 2 off, 3 on, 2 off, 5 on, 3 off, and then it repeats
+i want to put in my calendar what days he has off for this month
