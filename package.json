@@ -1,23 +1,20 @@
 {
-	"name": "chroney-server",
+	"name": "test",
 	"scripts": {
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy --minify",
-		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
-		"test": "vitest",
-		"test:ui": "vitest --ui"
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings"
 	},
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.13.1",
-		"agents": "^0.0.98",
-		"hono": "^4.8.2",
+		"@types/node": "^24.0.4",
+		"agents": "^0.0.99",
+		"hono": "^4.8.3",
 		"ics": "^3.8.1",
+		"mcp-remote": "^0.1.17",
 		"zod": "^3.25.67"
 	},
 	"devDependencies": {
-		"@vitest/ui": "^3.2.4",
-		"typescript": "^5.8.3",
-		"vitest": "^3.2.4",
-		"wrangler": "^4.21.1"
+		"wrangler": "^4.22.0"
 	}
 }

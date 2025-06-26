@@ -10,14 +10,15 @@ import {
 } from "./schedule";
 import { Hono } from "hono";
 
-// Re-export for tests
+type Env = {
+  ChroneyMCP: DurableObjectNamespace<ChroneyMCP>;
+};
+
+const app = new Hono<{ Bindings: Env }>();
+
 export { getEventsForPattern, type EventPattern };
 
-/*
-
-*/
-
-export class ChroneyServer extends McpAgent {
+export class ChroneyMCP extends McpAgent {
   server = new McpServer({
     name: "Authless calendar Mcp",
     version: "1.0.0",
@@ -101,13 +102,12 @@ export class ChroneyServer extends McpAgent {
   }
 }
 
-const app = new Hono();
-
-app.mount("/sse", ChroneyServer.serveSSE("/sse").fetch, {
+app.mount("/sse", ChroneyMCP.serveSSE("/sse").fetch, {
   replaceRequest: false,
 });
 
-app.mount("/mcp", ChroneyServer.serve("/mcp").fetch, {
+app.mount("/mcp", ChroneyMCP.serve("/mcp").fetch, {
   replaceRequest: false,
 });
+
 export default app;
