@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "chroney",
+	"name": "chroney-server",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-06-20",
 	"assets": {
