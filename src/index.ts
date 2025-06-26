@@ -14,14 +14,6 @@ import { Hono } from "hono";
 export { getEventsForPattern, type EventPattern };
 
 /*
-my buddy hudson works 6 on, 2 off, 5 on 2 off, 3 on, 2 off, 5 on, 3 off, and then it repeats
-i want to put in my calendar what days he has off for this month
-
-- get the current date
-- get total days in pattern
-- totalDays for schedule based on start date
-- ask a follow up question to get where you are in the pattern, are we in the 3 on, 2 off cycle?
-- we then request a list of events for said pattern and return them to the user
 
 */
 
