@@ -1,8 +1,9 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import ics from "ics";
-import { z } from "zod";
+import { number, z } from "zod";
 import {
+  anchor,
   getCurrentDate,
   getEventsForPattern,
   totalDaysInPattern,
@@ -25,6 +26,77 @@ export class ChroneyMCP extends McpAgent {
   });
   async init() {
     this.server.tool(
+      "get-current-day-of-pattern",
+      "Get the current day of pattern",
+      {
+        pattern: z
+          .array(
+            z.object({
+              type: z.enum(["event", "placeholder"]),
+              span: z.number().min(1),
+              desc: z.string(),
+              title: z.string(),
+            }),
+          )
+          .describe("Array of schedule pattern elements"),
+        indexOfCurrentEvent: z
+          .number()
+          .describe("the index that represents the current event"),
+        offset: z.number().describe("the number of days into said event"),
+      },
+      {
+        title: "Get current Day of Pattern",
+        description: "Calculates the last day to occur in the pattern",
+      },
+      (params) => {
+        const totalDays = anchor(
+          params.pattern,
+          params.indexOfCurrentEvent,
+          params.offset,
+        );
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `currentDayOfPattern: ${totalDays}`,
+            },
+          ],
+        };
+      },
+    );
+    this.server.tool(
+      "get-total-days-in-pattern",
+      "Calculate total days in a schedule pattern",
+      {
+        pattern: z
+          .array(
+            z.object({
+              type: z.enum(["event", "placeholder"]),
+              span: z.number().min(1),
+              desc: z.string(),
+              title: z.string(),
+            }),
+          )
+          .describe("Array of schedule pattern elements"),
+      },
+      {
+        title: "Get Total Days in Pattern",
+        description:
+          "Calculates the total number of days in a repeating schedule pattern",
+      },
+      (params) => {
+        const totalDays = totalDaysInPattern(params.pattern);
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: `totalPatternDays: ${totalDays}`,
+            },
+          ],
+        };
+      },
+    );
+    this.server.tool(
       "get-current-date-string",
       "Get current date string",
       {},
@@ -37,7 +109,7 @@ export class ChroneyMCP extends McpAgent {
           content: [
             {
               type: "text" as const,
-              text: getCurrentDate(),
+              text: `startDate: ${getCurrentDate()}`,
             },
           ],
         };
@@ -65,6 +137,10 @@ export class ChroneyMCP extends McpAgent {
           .number()
           .min(1)
           .describe("Total number of days to generate events for"),
+        textOnly: z
+          .boolean()
+          .default(true)
+          .describe("Return text format instead of ICS calendar data"),
       },
       {
         title: "Generate Schedule Events",
@@ -73,30 +149,37 @@ export class ChroneyMCP extends McpAgent {
       },
       (params) => {
         const totalPatternDays = totalDaysInPattern(params.pattern);
-        const events = getEventsForPattern(
+        const result = getEventsForPattern(
           params.pattern,
           params.startDate,
           totalPatternDays,
           params.currentDayOfPattern,
           params.totalDays,
+          params.textOnly,
         );
 
-        const icsResult = ics.createEvents(events);
+        if (params.textOnly) {
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: result as string,
+              },
+            ],
+          };
+        } else {
+          const events = result as ics.EventAttributes[];
+          const icsResult = ics.createEvents(events);
 
-        const result = {
-          events: events.length,
-          icsString: icsResult.error ? "Error generating ICS" : icsResult.value,
-          error: icsResult.error?.message || null,
-        };
-
-        return {
-          content: [
-            {
-              type: "text" as const,
-              text: `Generated ${events.length} calendar events.\n\nICS Calendar Data:\n${result.icsString || "Error occurred"}`,
-            },
-          ],
-        };
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: `Generated ${events.length} calendar events.\n\nICS Calendar Data:\n${icsResult.error ? "Error generating ICS" : icsResult.value}`,
+              },
+            ],
+          };
+        }
       },
     );
   }
